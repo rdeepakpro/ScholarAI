@@ -1,8 +1,13 @@
 name: Desktop builds
+
 on:
   workflow_dispatch:
   push:
-    tags: ['v*']
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -13,37 +18,47 @@ jobs:
             platform: darwin
             arch: arm64
             builder: mac
+
           - os: macos-13
             platform: darwin
             arch: x64
             builder: mac
+
           - os: windows-2022
             platform: win32
             arch: x64
             builder: win
+
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
       - run: npm run desktop:prepare-runtime
         env:
           TARGET_PLATFORM: ${{ matrix.platform }}
           TARGET_ARCH: ${{ matrix.arch }}
-      - run: npx electron-builder --${{ matrix.builder }} --${{ matrix.arch }}
+
+      - run: npx electron-builder --${{ matrix.builder }} --${{ matrix.arch }} --publish never
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
       - uses: actions/upload-artifact@v4
         with:
           name: SpeedyAI-${{ matrix.platform }}-${{ matrix.arch }}
           path: release/**
+
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
