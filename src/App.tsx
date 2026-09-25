@@ -8,6 +8,7 @@ import { LocalAIHomeCard, SettingsView, type Theme } from './components/Settings
 import { Onboarding } from './components/Onboarding'
 import { ClassesView } from './components/ClassWorkspace'
 import { initialData } from './data/demo'
+import speedyAILogo from './assets/branding/speedyai-logo.png'
 import { useLocalAI } from './hooks/useLocalAI'
 import { desktopCourseProvider, explainSection } from './lib/ai'
 import { extractSource } from './lib/extract'
@@ -124,7 +125,7 @@ function Sidebar({ page, onNavigate }: { page: Page; onNavigate: (page: Page) =>
     { id: 'study' as const, label: 'Study', icon: Zap },
   ]
   return <aside className="sidebar">
-    <button className="brand" onClick={() => onNavigate('home')}>SpeedyAI</button>
+    <button className="brand" onClick={() => onNavigate('home')}><span className="brand-mark"><img src={speedyAILogo} alt="" /></span><span>SpeedyAI</span></button>
     <nav>{nav.map(({ id, label, icon: Icon }) => <button key={id} className={page === id ? 'active' : ''} onClick={() => onNavigate(id)}><Icon size={18} /><span>{label}</span></button>)}</nav>
     <button className="sidebar-settings" onClick={() => onNavigate('settings')}><Settings size={18} />Settings</button>
   </aside>

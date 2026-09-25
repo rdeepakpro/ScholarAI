@@ -1,3 +1,3 @@
 # Branding assets
 
-Future approved assets can be placed here as `logo.svg` and `corvus.png`. The application must hide branding artwork when those files are absent; Corvus is never used as the sidebar logo.
+`speedyai-logo.png` is the transparent production version of the approved open-book logo. It is used by the in-app wordmark, onboarding, browser favicon, and desktop packaging icon. Corvus is never used as the sidebar logo.
