@@ -16,6 +16,10 @@ ScholarAI is an open-source desktop study application for macOS and Windows. It 
 - **Privacy** — user files, history, credentials, and downloaded models remain outside the source tree.
 - **Appearance** — monochrome Light, Dark, and System modes.
 
+
+https://github.com/user-attachments/assets/2bc8195b-4c70-4e5d-90f0-e8cc33a044ea
+
+
 ## Download
 
 Unsigned development installers are produced for macOS Apple Silicon, macOS Intel, and Windows x64 from `v*` tags. Until signing is configured, macOS may show a Gatekeeper warning and Windows may show a SmartScreen warning.
