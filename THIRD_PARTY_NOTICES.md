@@ -1,0 +1,24 @@
+# Third-party notices
+
+SpeedyAI downloads optional model data only after an explicit user choice. Model files are stored in the operating system's application-data directory and are not part of the installer or source archive.
+
+## Qwen models
+
+- Qwen 2.5 3B Instruct Q4_K_M: `Qwen/Qwen2.5-3B-Instruct-GGUF`
+- Qwen3 1.7B Q4_K_M: `ggml-org/Qwen3-1.7B-GGUF`, derived from `Qwen/Qwen3-1.7B`
+- Copyright: Alibaba Cloud and respective contributors
+- License: model-specific terms published with each model repository
+- Sources: https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF and https://huggingface.co/ggml-org/Qwen3-1.7B-GGUF
+
+## llama.cpp
+
+- Project: llama.cpp
+- Copyright (c) 2023-2026 The ggml authors
+- License: MIT
+- Source: https://github.com/ggml-org/llama.cpp
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

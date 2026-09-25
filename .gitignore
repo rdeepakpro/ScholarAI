@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+.DS_Store
+runtime/
+.runtime-cache/
+release/
+*.gguf
+*.gguf.part
+*.part
+.env
+*.local
+user-data/
+app-data/
+exports/

@@ -1,0 +1,107 @@
+{
+  "name": "speedyai",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A private, source-grounded desktop study application.",
+  "author": "SpeedyAI contributors",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -s first \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "web:dev": "vite",
+    "desktop:dev": "npm run dev",
+    "desktop:prepare-runtime": "node scripts/prepare-llama-runtime.mjs",
+    "desktop:dist": "npm run build && npm run desktop:prepare-runtime && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "eslint src --max-warnings=0",
+    "test": "vitest run",
+    "package": "npm run desktop:dist",
+    "package:mac": "npm run build && cross-env TARGET_PLATFORM=darwin TARGET_ARCH=arm64 npm run desktop:prepare-runtime && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64",
+    "package:mac:x64": "npm run build && cross-env TARGET_PLATFORM=darwin TARGET_ARCH=x64 npm run desktop:prepare-runtime && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --x64",
+    "package:win": "npm run build && cross-env TARGET_PLATFORM=win32 TARGET_ARCH=x64 npm run desktop:prepare-runtime && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --x64",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "jszip": "^3.10.2",
+    "lucide-react": "latest",
+    "mammoth": "latest",
+    "pdfjs-dist": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/manrope": "^5.3.0",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "electron": "latest",
+    "electron-builder": "latest",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "jsdom": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "^8.70.1",
+    "vite": "latest",
+    "vitest": "latest",
+    "wait-on": "^9.1.0"
+  },
+  "main": "electron/main.mjs",
+  "build": {
+    "appId": "ai.speedy.desktop",
+    "productName": "SpeedyAI",
+    "directories": {
+      "output": "release"
+    },
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "THIRD_PARTY_NOTICES.md"
+    ],
+    "extraResources": [
+      {
+        "from": "runtime",
+        "to": "llama-runtime",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "THIRD_PARTY_NOTICES.md",
+        "to": "THIRD_PARTY_NOTICES.md"
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.education",
+      "artifactName": "SpeedyAI-${version}-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "SpeedyAI-Setup-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Education"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
