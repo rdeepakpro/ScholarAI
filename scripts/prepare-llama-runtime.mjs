@@ -54,7 +54,13 @@ for (const asset of selected) {
   else await run('tar', ['-xzf', archive, '-C', extractTo])
   const root = await findRuntimeRoot(extractTo)
   await mkdir(join(target, asset.kind), { recursive: true })
-  await cp(root, join(target, asset.kind), { recursive: true })
+  // Dereference symlinks: fs.cp otherwise rewrites the archive's relative dylib/so links into
+  // absolute paths pointing at this build machine, which breaks the runtime on every other computer.
+  await cp(root, join(target, asset.kind), { recursive: true, dereference: true })
+  if (platform === process.platform && arch === process.arch) {
+    const executable = join(target, asset.kind, platform === 'win32' ? 'llama-server.exe' : 'llama-server')
+    await run(executable, ['--version'])
+  }
 }
 
 console.log(`Prepared official llama.cpp ${VERSION} runtime for ${platform}-${arch}`)

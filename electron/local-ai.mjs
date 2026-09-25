@@ -194,10 +194,19 @@ export class LocalAIManager {
     const args = ['--model', modelPath, '--host', '127.0.0.1', '--port', String(this.port), '--ctx-size', '4096', '--parallel', '1', '--threads', String(Math.max(2, Math.min(8, Math.floor((process.availableParallelism?.() || 4) * .75))))]
     if (accelerated || process.platform === 'darwin') args.push('--n-gpu-layers', '99')
     this.child = spawn(runtime, args, { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
-    this.child.once('exit', () => { this.child = null; this.port = null })
+    let output = ''
+    const capture = (chunk) => { output = (output + chunk).slice(-4000) }
+    this.child.stdout.on('data', capture)
+    this.child.stderr.on('data', capture)
+    this.child.once('error', (error) => capture(`\n${formatError(error)}`))
+    const child = this.child
+    this.child.once('exit', () => { if (this.child === child) { this.child = null; this.port = null } })
     const deadline = Date.now() + 90000
     while (Date.now() < deadline) {
-      if (!this.child) throw new Error('Local AI stopped while starting.')
+      if (!this.child) {
+        const detail = output.trim().split('\n').slice(-3).join(' ')
+        throw new Error(`Local AI stopped while starting.${detail ? ` ${detail}` : ''}`)
+      }
       if (await this.health()) return
       await new Promise((resolve) => setTimeout(resolve, 450))
     }
