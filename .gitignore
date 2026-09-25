@@ -4,14 +4,53 @@ dist/
 vite.config.js
 vite.config.d.ts
 .DS_Store
+
+# Local runtime and generated desktop artifacts
 runtime/
 .runtime-cache/
 release/
+out/
+coverage/
+
+# Local AI models and partial downloads
+models/
 *.gguf
+*.gguf.*
 *.gguf.part
 *.part
+
+# Environment and secrets
 .env
+*.env
+.env.*
+!.env.example
 *.local
+*.pem
+*.key
+*.p12
+
+# User data, imports, and local persistence
 user-data/
 app-data/
 exports/
+uploads/
+imports/
+materials/
+classes/
+courses/
+lessons/
+notes/
+flashcards/
+quizzes/
+chats/
+profile/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.log
+
+# Private source documents
+*.pdf
+*.docx
+*.pptx
