@@ -1,4 +1,4 @@
-# SpeedyAI
+# ScholarAI
 
 Turn what you're studying into lessons, notes, flashcards, quizzes, and study sessions.
 
