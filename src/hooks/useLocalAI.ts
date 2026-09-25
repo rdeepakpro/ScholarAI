@@ -16,13 +16,13 @@ export function useLocalAI() {
   const [message, setMessage] = useState('')
 
   const refresh = useCallback(async () => {
-    if (!window.speedyAI) return setState(browserState)
-    setState(await window.speedyAI.localAI.getState())
+    if (!window.scholarAI) return setState(browserState)
+    setState(await window.scholarAI.localAI.getState())
   }, [])
 
   useEffect(() => {
     refresh().catch((error) => setMessage(error instanceof Error ? error.message : String(error)))
-    const unsubscribe = window.speedyAI?.localAI.onProgress(setState)
+    const unsubscribe = window.scholarAI?.localAI.onProgress(setState)
     return () => { if (typeof unsubscribe === 'function') unsubscribe() }
   }, [refresh])
 
@@ -36,12 +36,12 @@ export function useLocalAI() {
   return {
     state, busy, message,
     install: (modelId: string) => run(async () => {
-      if (!window.speedyAI) throw new Error('Model downloads are available in the installed SpeedyAI desktop app.')
-      await window.speedyAI.localAI.install(modelId)
+      if (!window.scholarAI) throw new Error('Model downloads are available in the installed ScholarAI desktop app.')
+      await window.scholarAI.localAI.install(modelId)
     }, 'Local AI is ready.'),
-    cancel: () => run(async () => window.speedyAI?.localAI.cancel(), 'Download paused. You can resume it later.'),
-    remove: () => run(async () => window.speedyAI?.localAI.remove(), 'Local AI was removed from this computer.'),
-    test: () => run(async () => window.speedyAI?.localAI.test(), 'Test complete — Local AI is working.'),
+    cancel: () => run(async () => window.scholarAI?.localAI.cancel(), 'Download paused. You can resume it later.'),
+    remove: () => run(async () => window.scholarAI?.localAI.remove(), 'Local AI was removed from this computer.'),
+    test: () => run(async () => window.scholarAI?.localAI.test(), 'Test complete — Local AI is working.'),
     clearMessage: () => setMessage(''),
   }
 }

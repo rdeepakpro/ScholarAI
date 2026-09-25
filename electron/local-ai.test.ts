@@ -18,7 +18,7 @@ afterEach(async () => {
 
 describe('LocalAIManager downloads', () => {
   it('reports real bytes, verifies the hash, persists, and removes a model', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'speedyai-local-ai-'))
+    const directory = await mkdtemp(join(tmpdir(), 'scholarai-local-ai-'))
     directories.push(directory)
     const runtime = join(directory, 'llama-server')
     await writeFile(runtime, '')
@@ -48,7 +48,7 @@ describe('LocalAIManager downloads', () => {
   })
 
   it('resumes a partial download with an HTTP byte range', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'speedyai-local-ai-resume-'))
+    const directory = await mkdtemp(join(tmpdir(), 'scholarai-local-ai-resume-'))
     directories.push(directory)
     const runtime = join(directory, 'llama-server')
     await writeFile(runtime, '')

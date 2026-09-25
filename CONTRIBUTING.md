@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve SpeedyAI.
+Thanks for helping improve ScholarAI.
 
 1. Fork the repository and create a focused branch.
 2. Run `npm install`.

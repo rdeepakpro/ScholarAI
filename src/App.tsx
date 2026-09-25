@@ -7,7 +7,7 @@ import {
 import { LocalAIHomeCard, SettingsView, type Theme } from './components/SettingsView'
 import { Onboarding } from './components/Onboarding'
 import { ClassesView } from './components/ClassWorkspace'
-import speedyAILogo from './assets/branding/speedyai-logo.png'
+import scholarAILogo from './assets/branding/scholarai-logo.png'
 import { useLocalAI } from './hooks/useLocalAI'
 import { desktopCourseProvider, explainSection } from './lib/ai'
 import { extractSource } from './lib/extract'
@@ -37,7 +37,7 @@ function App() {
   const [generationClassId, setGenerationClassId] = useState<string | null>(null)
   const [generationTitle, setGenerationTitle] = useState('')
   const [toast, setToast] = useState('')
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('speedyai:theme') as Theme) || 'system')
+  const [theme, setTheme] = useState<Theme>(() => ((localStorage.getItem('scholarai:theme') ?? localStorage.getItem('speedyai:theme')) as Theme) || 'system')
   const localAI = useLocalAI()
 
   useEffect(() => saveData(data), [data])
@@ -45,7 +45,7 @@ function App() {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => document.documentElement.dataset.theme = theme === 'system' ? (media.matches ? 'dark' : 'light') : theme
-    apply(); localStorage.setItem('speedyai:theme', theme)
+    apply(); localStorage.setItem('scholarai:theme', theme)
     media.addEventListener('change', apply)
     return () => media.removeEventListener('change', apply)
   }, [theme])
@@ -78,11 +78,11 @@ function App() {
     setData((current) => ({ ...current, courses: current.courses.map((course) => course.id === courseId ? fn(course) : course) }))
   }
 
-  async function createCourse(sourceIds: string[], title?: string) {
+  async function createCourse(sourceIds: string[], title?: string, topic?: string) {
     const original = data.courses.find((course) => course.id === regenerateCourseId)
     const generationSources = data.sources.filter((source) => sourceIds.includes(source.id))
     const provider = await desktopCourseProvider(data.profile.learningPreferences)
-    const generated = await generateCourse({ sources: generationSources, title: title || original?.title }, provider)
+    const generated = await generateCourse({ sources: generationSources, title: title || original?.title, topic }, provider)
     const course = original ? { ...generated, id: original.id, createdAt: original.createdAt, classId: original.classId } : { ...generated, classId: generationClassId || undefined }
     setData((current) => ({ ...current, courses: original ? current.courses.map((item) => item.id === original.id ? course : item) : [course, ...current.courses] }))
     setSelectedCourseId(course.id); setPage('library'); setShowGenerator(false); setRegenerateCourseId(null); setGenerationClassId(null); setGenerationTitle(''); setToast(original ? 'Course regenerated from its sources' : 'Course generated and saved locally')
@@ -100,8 +100,7 @@ function App() {
       <main className="main-content">
         <Topbar onGenerate={() => startGeneration()} />
         {page === 'home' && <Home data={data} localAI={localAI.state} onSetup={() => setPage('settings')} onPlay={(courseId, lessonId) => setPlayer({ courseId, lessonId })} onGenerate={async (prompt) => {
-          if (!data.sources.length) return startGeneration(undefined, undefined, prompt)
-          await createCourse(data.sources.map((source) => source.id), prompt)
+          await createCourse(data.sources.map((source) => source.id), undefined, prompt)
         }} onStudy={() => setPage('study')} onNavigate={setPage} />}
         {page === 'classes' && <ClassesView data={data} selectedId={selectedClassId} onSelect={setSelectedClassId} onChange={setData} onAddClass={(name) => { const item = { id: crypto.randomUUID(), name, createdAt: new Date().toISOString() }; setData((current) => ({ ...current, classes: [...current.classes, item], profile: { ...current.profile, classes: [...current.profile.classes, name] } })); setSelectedClassId(item.id) }} onOpenCourse={openCourse} onGenerateLessons={() => startGeneration(undefined, selectedClassId)} />}
         {page === 'library' && selectedCourse ? <CourseView course={selectedCourse} sources={data.sources} onPlay={(lessonId) => setPlayer({ courseId: selectedCourse.id, lessonId })} onRename={(name) => updateCourse(selectedCourse.id, (course) => ({ ...course, title: name, updatedAt: new Date().toISOString() }))} onDelete={() => { if (!window.confirm(`Delete “${selectedCourse.title}”? Your lesson progress will also be removed.`)) return; setData((current) => ({ ...current, courses: current.courses.filter((course) => course.id !== selectedCourse.id) })); setSelectedCourseId(data.courses.find((course) => course.id !== selectedCourse.id)?.id || ''); setPage('home') }} onRegenerate={() => startGeneration(selectedCourse.id)} /> : null}
@@ -124,7 +123,7 @@ function Sidebar({ page, onNavigate }: { page: Page; onNavigate: (page: Page) =>
     { id: 'study' as const, label: 'Study', icon: Zap },
   ]
   return <aside className="sidebar">
-    <button className="brand" onClick={() => onNavigate('home')}><span className="brand-mark"><img src={speedyAILogo} alt="" /></span><span>SpeedyAI</span></button>
+    <button className="brand" onClick={() => onNavigate('home')}><span className="brand-mark"><img src={scholarAILogo} alt="" /></span><span>ScholarAI</span></button>
     <nav>{nav.map(({ id, label, icon: Icon }) => <button key={id} className={page === id ? 'active' : ''} onClick={() => onNavigate(id)}><Icon size={18} /><span>{label}</span></button>)}</nav>
     <button className="sidebar-settings" onClick={() => onNavigate('settings')}><Settings size={18} />Settings</button>
   </aside>
@@ -154,12 +153,13 @@ function Home({ data, localAI, onSetup, onPlay, onGenerate, onStudy, onNavigate 
     <section className="home-generator">
       <p className="kicker">GENERATE A LESSON</p>
       <h1>What do you want to learn?</h1>
-      <p>Ask for a topic and SpeedyAI will build a short, interactive course from your material.</p>
+      <p>Ask for any topic and ScholarAI will build a short, interactive course. Add material to ground it in your own notes.</p>
       <div className="lesson-prompt">
-        <textarea aria-label="What do you want to learn?" rows={2} value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submitPrompt() } }} placeholder="Teach me the main ideas in my uploaded material" />
+        <textarea aria-label="What do you want to learn?" rows={2} disabled={busy} value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submitPrompt() } }} placeholder="Teach me how photosynthesis works" />
         <button aria-label="Generate lesson" disabled={!prompt.trim() || busy} onClick={() => void submitPrompt()}>{busy ? <span className="prompt-spinner" /> : <ArrowRight size={18} />}</button>
       </div>
-      <div className="prompt-meta"><span><FileText size={14} />Grounded in {data.sources.length ? `${data.sources.length} uploaded ${data.sources.length === 1 ? 'material' : 'materials'}` : 'your uploaded material'}</span><button onClick={() => onNavigate('sources')}>{data.sources.length ? 'Manage materials' : 'Add material'}</button></div>
+      <div className="prompt-meta"><span><FileText size={14} />{data.sources.length ? `Grounded in ${data.sources.length} uploaded ${data.sources.length === 1 ? 'material' : 'materials'}` : 'Uses general knowledge. Add material to use your own notes.'}</span><button onClick={() => onNavigate('sources')}>{data.sources.length ? 'Manage materials' : 'Add material'}</button></div>
+      {busy && <p className="prompt-status" role="status"><span className="prompt-spinner dark" />Building your course with Local AI. This usually takes 1–2 minutes, so keep ScholarAI open.</p>}
       {error && <p className="prompt-error" role="alert">{error}</p>}
     </section>
     <LocalAIHomeCard state={localAI} onSetup={onSetup} />
@@ -174,7 +174,7 @@ function CourseView({ course, sources, onPlay, onRename, onDelete, onRegenerate 
   const [name, setName] = useState(course.title)
   const next = nextLesson(course)
   return <div className="page course-page">
-    <div className="course-header"><div><p className="kicker">BIOLOGY · GENERATED COURSE</p>{renaming ? <form onSubmit={(e) => { e.preventDefault(); onRename(name); setRenaming(false) }}><input className="title-input" value={name} onChange={(e) => setName(e.target.value)} autoFocus /></form> : <h1>{course.title}</h1>}<p>{course.description}</p><div className="source-pills">{course.sourceIds.map((id) => <span key={id}><FileText size={13} />{sources.find((source) => source.id === id)?.name || 'Source'}</span>)}</div></div><div className="course-actions"><button className="button" onClick={() => onPlay(next.id)}>{courseProgress(course) ? 'Continue course' : 'Start course'} <ArrowRight size={17} /></button><button className="icon-button" aria-label="Course actions" onClick={() => setMenu(!menu)}><MoreHorizontal /></button>{menu && <div className="action-menu"><button onClick={() => { setRenaming(true); setMenu(false) }}>Rename course</button><button onClick={() => { onRegenerate(); setMenu(false) }}><RotateCcw size={14} /> Regenerate</button><button className="danger" onClick={onDelete}><Trash2 size={14} /> Delete course</button></div>}</div></div>
+    <div className="course-header"><div><p className="kicker">{course.sourceIds.length ? "GENERATED COURSE" : "TOPIC COURSE"}</p>{renaming ? <form onSubmit={(e) => { e.preventDefault(); onRename(name); setRenaming(false) }}><input className="title-input" value={name} onChange={(e) => setName(e.target.value)} autoFocus /></form> : <h1>{course.title}</h1>}<p>{course.description}</p><div className="source-pills">{course.sourceIds.map((id) => <span key={id}><FileText size={13} />{sources.find((source) => source.id === id)?.name || 'Source'}</span>)}</div></div><div className="course-actions"><button className="button" onClick={() => onPlay(next.id)}>{courseProgress(course) ? 'Continue course' : 'Start course'} <ArrowRight size={17} /></button><button className="icon-button" aria-label="Course actions" onClick={() => setMenu(!menu)}><MoreHorizontal /></button>{menu && <div className="action-menu"><button onClick={() => { setRenaming(true); setMenu(false) }}>Rename course</button><button onClick={() => { onRegenerate(); setMenu(false) }}><RotateCcw size={14} /> Regenerate</button><button className="danger" onClick={onDelete}><Trash2 size={14} /> Delete course</button></div>}</div></div>
     <div className="course-summary"><div className="summary-progress"><div className="ring-small" style={{ '--progress': `${courseProgress(course) * 3.6}deg` } as React.CSSProperties}><span>{courseProgress(course)}%</span></div><div><strong>{course.lessons.filter((lesson) => lesson.progress.completed).length} of {course.lessons.length} lessons</strong><small>Course progress</small></div></div><div><Clock3 size={18} /><span><strong>{course.estimatedMinutes} min</strong><small>Estimated time</small></span></div><div><Zap size={18} /><span><strong>{weakCount(course)} concepts</strong><small>Need review</small></span></div></div>
     <section className="lesson-list"><div className="section-title"><div><p className="kicker">COURSE OUTLINE</p><h2>Lessons</h2></div></div>{course.lessons.map((lesson, index) => <button key={lesson.id} className={`lesson-row ${lesson.id === next.id ? 'current' : ''}`} onClick={() => onPlay(lesson.id)}><span className={`lesson-status ${lesson.progress.completed ? 'done' : ''}`}>{lesson.progress.completed ? <Check size={15} /> : index + 1}</span><div><strong>{lesson.title}</strong><p>{lesson.objective}</p></div><span className="lesson-time">{lesson.estimatedMinutes} min</span><ChevronRight size={18} /></button>)}</section>
   </div>
@@ -235,12 +235,12 @@ function SectionCard({ section, sources }: { section: LessonSection; sources: So
     if (assist === mode) { setAssist(null); return }
     setAssist(mode); setAssistText(''); setAssistBusy(true)
     try {
-      if (window.speedyAI) setAssistText(await explainSection(section, sources, mode))
+      if (window.scholarAI) setAssistText(await explainSection(section, sources, mode))
       else setAssistText(mode === 'simple' ? `The central point is: ${section.body.split(/[.!?]/)[0].toLowerCase()}. Focus on that connection before adding the details.` : mode === 'different' ? 'Start with the relationship instead of the vocabulary. Then attach the terms from the source to that relationship.' : 'Imagine this concept as a handoff from one stage to the next.')
     } catch (error) { setAssistText(error instanceof Error ? error.message : 'Could not generate an explanation.') }
     finally { setAssistBusy(false) }
   }
-  return <article className={`section-card kind-${section.kind}`}><p className="kicker">{section.eyebrow}</p><h1>{section.title}</h1><p className="section-body">{section.body}</p>{assist && <div className="assist-box"><Sparkles size={18} /><div><strong>{assist === 'simple' ? 'In simpler words' : assist === 'different' ? 'A different explanation' : 'Another way to picture it'}</strong><p>{assistBusy ? 'Thinking…' : assistText}</p></div></div>}<div className="section-tools"><button disabled={assistBusy} onClick={() => requestAssist('different')}>Explain differently</button><button disabled={assistBusy} onClick={() => requestAssist('simple')}>Simplify this</button><button disabled={assistBusy} onClick={() => requestAssist('example')}>Give me an example</button><button onClick={() => setSourceOpen(!sourceOpen)}><FileText size={14} />View source</button></div>{sourceOpen && <div className="source-drawer"><p className="kicker">SOURCE EXCERPT</p>{chunks.map((chunk) => <blockquote key={chunk.id}>{chunk.content}</blockquote>)}</div>}</article>
+  return <article className={`section-card kind-${section.kind}`}><p className="kicker">{section.eyebrow}</p><h1>{section.title}</h1><p className="section-body">{section.body}</p>{assist && <div className="assist-box"><Sparkles size={18} /><div><strong>{assist === 'simple' ? 'In simpler words' : assist === 'different' ? 'A different explanation' : 'Another way to picture it'}</strong><p>{assistBusy ? 'Thinking…' : assistText}</p></div></div>}<div className="section-tools"><button disabled={assistBusy} onClick={() => requestAssist('different')}>Explain differently</button><button disabled={assistBusy} onClick={() => requestAssist('simple')}>Simplify this</button><button disabled={assistBusy} onClick={() => requestAssist('example')}>Give me an example</button>{chunks.length > 0 && <button onClick={() => setSourceOpen(!sourceOpen)}><FileText size={14} />View source</button>}</div>{sourceOpen && <div className="source-drawer"><p className="kicker">SOURCE EXCERPT</p>{chunks.map((chunk) => <blockquote key={chunk.id}>{chunk.content}</blockquote>)}</div>}</article>
 }
 
 function CheckpointCard({ checkpoint, previous, onAnswer }: { checkpoint: LessonCheckpoint; previous?: Lesson['progress']['checkpointAnswers'][string]; onAnswer: (answer: string, correct: boolean) => void }) {
@@ -262,7 +262,7 @@ function SourcesView({ sources, onAdd, onGenerate }: { sources: SourceMaterial[]
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   async function addFiles(files: FileList | null) { if (!files) return; setBusy(true); try { onAdd(await Promise.all([...files].map(extractSource))) } finally { setBusy(false) } }
-  return <div className="page"><div className="page-heading"><div><p className="kicker">MATERIALS</p><h1>Your materials</h1><p>Everything SpeedyAI teaches is grounded in these uploads.</p></div><button data-add-material className="button" onClick={() => input.current?.click()}><Upload size={17} />{busy ? 'Importing…' : 'Add material'}</button><input hidden ref={input} type="file" multiple accept=".pdf,.pptx,.docx,.txt,.md,.csv" onChange={(e) => addFiles(e.target.files)} /></div><div className="materials-grid">{sources.map((source) => <div className="material-card" key={source.id}><div className="file-icon"><FileText /></div><div><strong>{source.name}</strong><p>{source.chunks.length} grounded sections · {Math.ceil(source.text.length / 1200)} min read</p></div><span>{source.type.toUpperCase()}</span></div>)}</div><button className="generate-banner" onClick={onGenerate}><BookOpen /><span><strong>Generate lessons from these materials</strong><small>Create an ordered, interactive course.</small></span><ArrowRight /></button></div>
+  return <div className="page"><div className="page-heading"><div><p className="kicker">MATERIALS</p><h1>Your materials</h1><p>Everything ScholarAI teaches is grounded in these uploads.</p></div><button data-add-material className="button" onClick={() => input.current?.click()}><Upload size={17} />{busy ? 'Importing…' : 'Add material'}</button><input hidden ref={input} type="file" multiple accept=".pdf,.pptx,.docx,.txt,.md,.csv" onChange={(e) => addFiles(e.target.files)} /></div><div className="materials-grid">{sources.map((source) => <div className="material-card" key={source.id}><div className="file-icon"><FileText /></div><div><strong>{source.name}</strong><p>{source.chunks.length} grounded sections · {Math.ceil(source.text.length / 1200)} min read</p></div><span>{source.type.toUpperCase()}</span></div>)}</div><button className="generate-banner" onClick={onGenerate}><BookOpen /><span><strong>Generate lessons from these materials</strong><small>Create an ordered, interactive course.</small></span><ArrowRight /></button></div>
 }
 
 function StudyMode({ data, onPlay }: { data: AppData; onPlay: (courseId: string, lessonId: string) => void }) {
@@ -281,7 +281,7 @@ function GenerateModal({ sources, initialSelected, initialTitle, regenerating, o
   const [error, setError] = useState('')
   const input = useRef<HTMLInputElement>(null)
   async function upload(files: FileList | null) { if (!files) return; setBusy(true); try { const added = await Promise.all([...files].map(extractSource)); onSources(added); setSelected((ids) => [...ids, ...added.map((source) => source.id)]) } catch (err) { setError(err instanceof Error ? err.message : 'Could not import file.') } finally { setBusy(false) } }
-  return <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}><div className="modal"><button className="modal-close" aria-label="Close generator" onClick={onClose}><X /></button><div className="modal-icon"><Sparkles /></div><p className="kicker">{regenerating ? 'REGENERATE COURSE' : 'GENERATE LESSONS'}</p><h2>{regenerating ? 'Build a fresh course?' : 'What do you want to learn?'}</h2><p>Choose material to create a source-grounded course with ordered lessons and checkpoints.</p><label className="field"><span>Course title <small>optional</small></span><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="SpeedyAI will suggest one" /></label><div className="material-select-head"><strong>Select material</strong><button onClick={() => setSelected(selected.length === sources.length ? [] : sources.map((source) => source.id))}>{selected.length === sources.length ? 'Clear all' : 'Select all'}</button></div><div className="material-select">{sources.map((source) => <label key={source.id} className={selected.includes(source.id) ? 'selected' : ''}><input type="checkbox" checked={selected.includes(source.id)} onChange={() => setSelected((ids) => ids.includes(source.id) ? ids.filter((id) => id !== source.id) : [...ids, source.id])} /><span className="check-box">{selected.includes(source.id) && <Check size={14} />}</span><FileText size={19} /><span><strong>{source.name}</strong><small>{source.chunks.length} source sections</small></span></label>)}</div><button className="upload-row" onClick={() => input.current?.click()}><Plus size={17} />Upload more material</button><input ref={input} hidden type="file" multiple accept=".pdf,.pptx,.docx,.txt,.md" onChange={(e) => upload(e.target.files)} />{error && <p className="error-text">{error}</p>}<button className="button modal-generate" disabled={!selected.length || busy} onClick={async () => { setBusy(true); setError(''); try { await onGenerate(selected, title || undefined) } catch (err) { setError(err instanceof Error ? err.message : 'Generation failed.'); setBusy(false) } }}>{busy ? 'Building your course…' : regenerating ? 'Regenerate course' : 'Generate course'}<Sparkles size={17} /></button><small className="grounded-note">Generated content stays grounded in the selected material.</small></div></div>
+  return <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}><div className="modal"><button className="modal-close" aria-label="Close generator" onClick={onClose}><X /></button><div className="modal-icon"><Sparkles /></div><p className="kicker">{regenerating ? 'REGENERATE COURSE' : 'GENERATE LESSONS'}</p><h2>{regenerating ? 'Build a fresh course?' : 'What do you want to learn?'}</h2><p>Choose material to create a source-grounded course with ordered lessons and checkpoints.</p><label className="field"><span>Course title <small>optional</small></span><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="ScholarAI will suggest one" /></label><div className="material-select-head"><strong>Select material</strong><button onClick={() => setSelected(selected.length === sources.length ? [] : sources.map((source) => source.id))}>{selected.length === sources.length ? 'Clear all' : 'Select all'}</button></div><div className="material-select">{sources.map((source) => <label key={source.id} className={selected.includes(source.id) ? 'selected' : ''}><input type="checkbox" checked={selected.includes(source.id)} onChange={() => setSelected((ids) => ids.includes(source.id) ? ids.filter((id) => id !== source.id) : [...ids, source.id])} /><span className="check-box">{selected.includes(source.id) && <Check size={14} />}</span><FileText size={19} /><span><strong>{source.name}</strong><small>{source.chunks.length} source sections</small></span></label>)}</div><button className="upload-row" onClick={() => input.current?.click()}><Plus size={17} />Upload more material</button><input ref={input} hidden type="file" multiple accept=".pdf,.pptx,.docx,.txt,.md" onChange={(e) => upload(e.target.files)} />{error && <p className="error-text">{error}</p>}<button className="button modal-generate" disabled={!selected.length || busy} onClick={async () => { setBusy(true); setError(''); try { await onGenerate(selected, title || undefined) } catch (err) { setError(err instanceof Error ? err.message : 'Generation failed.'); setBusy(false) } }}>{busy ? 'Building your course…' : regenerating ? 'Regenerate course' : 'Generate course'}<Sparkles size={17} /></button><small className="grounded-note">Generated content stays grounded in the selected material.</small></div></div>
 }
 
 function EmptyLibrary({ onGenerate }: { onGenerate: () => void }) { return <div className="empty-state"><h1>No courses yet</h1><p>Turn your first source into a guided learning experience.</p><button className="button" onClick={onGenerate}>Generate lessons</button></div> }

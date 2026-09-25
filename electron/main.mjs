@@ -1,11 +1,21 @@
 import { app, BrowserWindow, ipcMain, safeStorage } from 'electron'
 import { join } from 'node:path'
 import { readFile, writeFile } from 'node:fs/promises'
+import { existsSync, renameSync, rmSync } from 'node:fs'
 import { LocalAIManager } from './local-ai.mjs'
 
 let window
 let localAI
 const isDev = !app.isPackaged
+
+// The app was renamed from SpeedyAI; carry over the previous data folder (models, courses, settings) once.
+// Electron creates the userData folder at startup, so check for real data rather than the folder itself.
+const legacyUserData = join(app.getPath('appData'), 'speedyai')
+const userData = app.getPath('userData')
+const hasData = (dir) => ['models', 'Local Storage', 'ai-provider.json'].some((name) => existsSync(join(dir, name)))
+if (legacyUserData.toLowerCase() !== userData.toLowerCase() && hasData(legacyUserData) && !hasData(userData)) {
+  try { rmSync(userData, { recursive: true, force: true }); renameSync(legacyUserData, userData) } catch (error) { console.error('Could not migrate SpeedyAI data', error) }
+}
 
 async function createWindow() {
   window = new BrowserWindow({
@@ -13,7 +23,7 @@ async function createWindow() {
     backgroundColor: '#f5f5f3', titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     webPreferences: { preload: join(import.meta.dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true },
   })
-  if (isDev) await window.loadURL(process.env.SPEEDYAI_DEV_URL || 'http://127.0.0.1:5173')
+  if (isDev) await window.loadURL(process.env.SCHOLARAI_DEV_URL || 'http://127.0.0.1:5173')
   else await window.loadFile(join(app.getAppPath(), 'dist', 'index.html'))
 }
 

@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
-contextBridge.exposeInMainWorld('speedyAI', {
+contextBridge.exposeInMainWorld('scholarAI', {
   localAI: {
     getState: () => ipcRenderer.invoke('local-ai:state'),
     install: (modelId) => ipcRenderer.invoke('local-ai:install', modelId),

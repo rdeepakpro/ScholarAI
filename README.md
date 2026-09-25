@@ -1,8 +1,8 @@
-# SpeedyAI
+# ScholarAI
 
 Turn what you're studying into lessons, notes, flashcards, quizzes, and study sessions.
 
-SpeedyAI is an open-source desktop study application for macOS and Windows. It turns your own material into a calm, source-grounded learning workflow, with optional AI that runs privately on your computer.
+ScholarAI is an open-source desktop study application for macOS and Windows. It turns your own material into a calm, source-grounded learning workflow, with optional AI that runs privately on your computer.
 
 ## Features
 
@@ -22,7 +22,7 @@ Unsigned development installers are produced for macOS Apple Silicon, macOS Inte
 
 ## Local AI setup
 
-During onboarding, choose Built-in Local AI or another OpenAI-compatible provider. This choice never starts a download. When you are ready, open **Settings → Models** to explicitly download Qwen 2.5 3B (the default local model, about 2.1 GB) or Qwen3 1.7B (lightweight, about 1.3 GB). SpeedyAI checks disk space, shows real byte progress, supports cancellation and resume, verifies SHA-256, starts packaged llama.cpp, and tests the model before showing Ready. Models are not included in the installer.
+During onboarding, choose Built-in Local AI or another OpenAI-compatible provider. This choice never starts a download. When you are ready, open **Settings → Models** to explicitly download Qwen 2.5 3B (the default local model, about 2.1 GB) or Qwen3 1.7B (lightweight, about 1.3 GB). ScholarAI checks disk space, shows real byte progress, supports cancellation and resume, verifies SHA-256, starts packaged llama.cpp, and tests the model before showing Ready. Models are not included in the installer.
 
 ## Building from source
 
@@ -54,4 +54,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CODE_OF
 
 ## License
 
-SpeedyAI is available under the [MIT License](LICENSE). Downloaded Qwen models retain their model-specific upstream licenses; llama.cpp is MIT licensed.
+ScholarAI is available under the [MIT License](LICENSE). Downloaded Qwen models retain their model-specific upstream licenses; llama.cpp is MIT licensed.

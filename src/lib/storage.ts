@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { ChatThreadSchema, ClassSchema, CourseSchema, FlashcardSchema, NoteSchema, ProfileSchema, QuizSchema, SourceMaterialSchema, type AppData } from '../models'
 
-const STORAGE_KEY = 'speedyai:v0.1.0'
+const STORAGE_KEY = 'scholarai:v0.1.0'
+const LEGACY_STORAGE_KEY = 'speedyai:v0.1.0'
 const LEGACY_DEMO_SOURCE_ID = 'demo-source-cellular-respiration'
 const LEGACY_DEMO_COURSE_ID = 'demo-course-cellular-respiration'
 const LEGACY_DEMO_CLASS_IDS = new Set(['class-biology', 'class-demo-course-cellular-respiration'])
@@ -56,7 +57,7 @@ function removeLegacyDemo(data: AppData): AppData {
 
 export function loadData(fallback: AppData): AppData {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = (localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY))
     if (!raw) return fallback
     const parsed = AppDataSchema.safeParse(JSON.parse(raw))
     if (!parsed.success) return fallback
@@ -72,10 +73,10 @@ export function loadData(fallback: AppData): AppData {
 
 export function exportData(data: AppData) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `speedyai-export-${new Date().toISOString().slice(0, 10)}.json`; link.click(); URL.revokeObjectURL(link.href)
+  const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `scholarai-export-${new Date().toISOString().slice(0, 10)}.json`; link.click(); URL.revokeObjectURL(link.href)
 }
 
-export function clearData() { localStorage.removeItem(STORAGE_KEY) }
+export function clearData() { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_STORAGE_KEY) }
 
 export function saveData(data: AppData) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))

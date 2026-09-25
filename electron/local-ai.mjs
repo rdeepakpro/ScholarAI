@@ -54,7 +54,7 @@ export class LocalAIManager {
   }
 
   runtimeCandidates() {
-    if (process.env.SPEEDYAI_LLAMA_SERVER) return [process.env.SPEEDYAI_LLAMA_SERVER]
+    if (process.env.SCHOLARAI_LLAMA_SERVER) return [process.env.SCHOLARAI_LLAMA_SERVER]
     const platform = process.platform
     const arch = process.arch
     const executable = platform === 'win32' ? 'llama-server.exe' : 'llama-server'
@@ -64,7 +64,7 @@ export class LocalAIManager {
 
   runtimePath() {
     const path = this.runtimeCandidates().find(existsSync)
-    if (!path) throw new Error('The local AI runtime is missing from this app build. Reinstall SpeedyAI.')
+    if (!path) throw new Error('The local AI runtime is missing from this app build. Reinstall ScholarAI.')
     return path
   }
 
@@ -79,8 +79,9 @@ export class LocalAIManager {
   }
 
   async install(modelId) {
-    if (this.download) throw new Error('A model download is already running.')
     const model = getModel(modelId)
+    if (this.download?.modelId === modelId) return this.getState()
+    if (this.download) throw new Error('A model download is already running.')
     this.runtimePath()
     await this.stop()
     await this.ensureDiskSpace(model)
@@ -191,7 +192,7 @@ export class LocalAIManager {
     this.port = await this.freePort()
     const runtime = this.runtimePath()
     const accelerated = runtime.includes(`${join('', 'accelerated')}`)
-    const args = ['--model', modelPath, '--host', '127.0.0.1', '--port', String(this.port), '--ctx-size', '4096', '--parallel', '1', '--threads', String(Math.max(2, Math.min(8, Math.floor((process.availableParallelism?.() || 4) * .75))))]
+    const args = ['--model', modelPath, '--host', '127.0.0.1', '--port', String(this.port), '--ctx-size', '16384', '--parallel', '1', '--threads', String(Math.max(2, Math.min(8, Math.floor((process.availableParallelism?.() || 4) * .75))))]
     if (accelerated || process.platform === 'darwin') args.push('--n-gpu-layers', '99')
     this.child = spawn(runtime, args, { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
     let output = ''
@@ -229,7 +230,7 @@ export class LocalAIManager {
     await this.ensureServer()
     const request = async () => fetch(`http://127.0.0.1:${this.port}/v1/chat/completions`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, signal: AbortSignal.timeout(180000),
-      body: JSON.stringify({ model: 'local', messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }], temperature, max_tokens: maxTokens, stream: false }),
+      body: JSON.stringify({ model: 'local', messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }], temperature, max_tokens: maxTokens, stream: false, chat_template_kwargs: { enable_thinking: false } }),
     })
     let response = await request()
     if (!response.ok) {

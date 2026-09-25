@@ -83,10 +83,11 @@ kbd { min-width: 24px; padding: 2px 6px; border: 1px solid var(--border); border
 /* Home */
 .home-generator { width: min(760px, 100%); margin: 16px auto 32px; text-align: center; }
 .home-generator h1 { margin-bottom: 8px; font-size: 32px; line-height: 1.2; }
-.home-generator > p:not(.kicker):not(.prompt-error) { max-width: 560px; margin: 0 auto 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.home-generator > p:not(.kicker):not(.prompt-error):not(.prompt-status) { max-width: 560px; margin: 0 auto 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .lesson-prompt { min-height: 92px; padding: 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); display: flex; align-items: flex-end; gap: 12px; box-shadow: 0 8px 28px #00000008; text-align: left; }
 .lesson-prompt:focus-within { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
-.lesson-prompt textarea { min-width: 0; min-height: 66px; max-height: 144px; padding: 4px; border: 0; background: transparent; color: var(--text); flex: 1; resize: vertical; font-size: 15px; line-height: 1.5; }
+.lesson-prompt textarea { min-width: 0; min-height: 66px; max-height: 144px; padding: 4px; border: 0; background: transparent; color: var(--text); flex: 1; resize: none; font-size: 15px; line-height: 1.5; }
+.lesson-prompt textarea:focus-visible { outline: none; }
 .lesson-prompt textarea::placeholder { color: var(--faint); }
 .lesson-prompt button { width: 40px; height: 40px; padding: 0; border: 1px solid var(--inverse); border-radius: var(--radius-sm); background: var(--inverse); color: var(--inverse-text); display: grid; place-items: center; flex: 0 0 auto; cursor: pointer; }
 .lesson-prompt button:hover:not(:disabled) { opacity: .86; }
@@ -252,3 +253,14 @@ kbd { min-width: 24px; padding: 2px 6px; border: 1px solid var(--border); border
 @media (max-width: 920px) {
   html, body, #root { min-width: 760px; }.home-lists { grid-template-columns: 1fr; gap: 32px; }.course-summary { grid-template-columns: 1fr; }.course-summary > div { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--border); }.course-summary > div:first-child { padding-top: 0; border-top: 0; }.search { width: 240px; }
 }
+
+.local-ai-setup { text-align: center; }
+.local-ai-setup .onboarding-brand { justify-content: center; }
+.setup-progress { height: 8px; margin: 28px 0 10px; border-radius: 999px; background: var(--surface-subtle); overflow: hidden; }
+.setup-progress span { display: block; height: 100%; border-radius: inherit; background: var(--text); transition: width .3s ease; }
+.setup-progress span.indeterminate { width: 35% !important; animation: setup-slide 1.2s ease-in-out infinite; }
+@keyframes setup-slide { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+.setup-percent { font-size: 13px; }
+.setup-actions { margin-top: 24px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.prompt-status { margin: 12px 4px 0; color: var(--muted); display: flex; align-items: center; gap: 10px; font-size: 13px; text-align: left; }
+.prompt-spinner.dark { flex: 0 0 auto; border-color: color-mix(in srgb, var(--text) 25%, transparent); border-top-color: var(--text); }

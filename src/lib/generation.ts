@@ -3,6 +3,7 @@ import { CourseSchema, type Course, type SourceChunk, type SourceMaterial } from
 export type CourseGenerationInput = {
   sources: SourceMaterial[]
   title?: string
+  topic?: string
 }
 
 export type StructuredCourseProvider = {
@@ -102,7 +103,10 @@ function buildFallbackCourse({ sources, title }: CourseGenerationInput): Course 
 }
 
 export async function generateCourse(input: CourseGenerationInput, provider?: StructuredCourseProvider) {
-  if (!input.sources.length) throw new Error('Select at least one source.')
+  if (!input.sources.length) {
+    if (!input.topic?.trim()) throw new Error('Enter a topic or select at least one source.')
+    if (!provider) throw new Error('Set up Local AI in Settings → Models to generate lessons from a topic.')
+  }
   if (provider) return CourseSchema.parse(await provider.generateCourse(input))
   return buildFallbackCourse(input)
 }

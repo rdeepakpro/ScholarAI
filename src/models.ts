@@ -23,7 +23,7 @@ export const LessonSectionSchema = z.object({
   eyebrow: z.string(),
   title: z.string(),
   body: z.string().min(1),
-  sourceChunkIds: z.array(z.string()).min(1),
+  sourceChunkIds: z.array(z.string()).default([]),
 })
 
 export const LessonCheckpointSchema = z.object({
@@ -34,7 +34,7 @@ export const LessonCheckpointSchema = z.object({
   options: z.array(z.string()).optional(),
   correctAnswer: z.string().min(1),
   explanation: z.string().min(1),
-  sourceChunkIds: z.array(z.string()).min(1),
+  sourceChunkIds: z.array(z.string()).default([]),
 })
 
 export const LessonProgressSchema = z.object({
@@ -64,7 +64,7 @@ export const CourseSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
-  sourceIds: z.array(z.string()).min(1),
+  sourceIds: z.array(z.string()).default([]),
   estimatedMinutes: z.number().int().positive(),
   lessons: z.array(LessonSchema).min(1),
   createdAt: z.string(),

@@ -1,6 +1,6 @@
 # Third-party notices
 
-SpeedyAI downloads optional model data only after an explicit user choice. Model files are stored in the operating system's application-data directory and are not part of the installer or source archive.
+ScholarAI downloads optional model data only after an explicit user choice. Model files are stored in the operating system's application-data directory and are not part of the installer or source archive.
 
 ## Qwen models
 
