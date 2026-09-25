@@ -7,13 +7,12 @@ import {
 import { LocalAIHomeCard, SettingsView, type Theme } from './components/SettingsView'
 import { Onboarding } from './components/Onboarding'
 import { ClassesView } from './components/ClassWorkspace'
-import { initialData } from './data/demo'
 import speedyAILogo from './assets/branding/speedyai-logo.png'
 import { useLocalAI } from './hooks/useLocalAI'
 import { desktopCourseProvider, explainSection } from './lib/ai'
 import { extractSource } from './lib/extract'
 import { generateCourse } from './lib/generation'
-import { emptyData, hasStoredData, loadData, saveData } from './lib/storage'
+import { emptyData, loadData, saveData } from './lib/storage'
 import type { AppData, Course, Lesson, LessonCheckpoint, LessonSection, SourceMaterial } from './models'
 
 type Page = 'home' | 'classes' | 'library' | 'sources' | 'study' | 'settings'
@@ -28,7 +27,7 @@ function nextLesson(course: Course) {
 }
 
 function App() {
-  const [data, setData] = useState<AppData>(() => loadData(hasStoredData() ? initialData : emptyData()))
+  const [data, setData] = useState<AppData>(() => loadData(emptyData()))
   const [page, setPage] = useState<Page>('home')
   const [selectedCourseId, setSelectedCourseId] = useState(data.courses[0]?.id || '')
   const [selectedClassId, setSelectedClassId] = useState(data.classes[0]?.id || '')
@@ -157,7 +156,7 @@ function Home({ data, localAI, onSetup, onPlay, onGenerate, onStudy, onNavigate 
       <h1>What do you want to learn?</h1>
       <p>Ask for a topic and SpeedyAI will build a short, interactive course from your material.</p>
       <div className="lesson-prompt">
-        <textarea aria-label="What do you want to learn?" rows={2} value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submitPrompt() } }} placeholder="Teach me cellular respiration from my class materials" />
+        <textarea aria-label="What do you want to learn?" rows={2} value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submitPrompt() } }} placeholder="Teach me the main ideas in my uploaded material" />
         <button aria-label="Generate lesson" disabled={!prompt.trim() || busy} onClick={() => void submitPrompt()}>{busy ? <span className="prompt-spinner" /> : <ArrowRight size={18} />}</button>
       </div>
       <div className="prompt-meta"><span><FileText size={14} />Grounded in {data.sources.length ? `${data.sources.length} uploaded ${data.sources.length === 1 ? 'material' : 'materials'}` : 'your uploaded material'}</span><button onClick={() => onNavigate('sources')}>{data.sources.length ? 'Manage materials' : 'Add material'}</button></div>
