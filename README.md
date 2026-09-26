@@ -1,4 +1,5 @@
 # ScholarAI
+<img width="1392" height="888" alt="image" src="https://github.com/user-attachments/assets/361232f8-1140-4e03-8faa-7b8b51afa33b" />
 
 Turn what you're studying into lessons, notes, flashcards, quizzes, and study sessions.
 
